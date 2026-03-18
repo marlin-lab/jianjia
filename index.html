@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>蒹葭 · 读书落地工具</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="app-header">
+        <div class="brand">
+          <h1>蒹葭</h1>
+          <p class="brand-tagline">一款帮你把书里的好句子，慢慢长成自己生活方式的读书落地工具。</p>
+        </div>
+      </header>
+
+      <nav class="app-nav">
+        <button data-tab="import" class="nav-button active">导入图书</button>
+        <button data-tab="cards" class="nav-button">卡片复习</button>
+        <button data-tab="todos" class="nav-button">待办 & 打卡</button>
+        <button data-tab="timeline" class="nav-button">时间轴</button>
+        <button data-tab="settings" class="nav-button">提醒设置</button>
+      </nav>
+
+      <main class="app-main">
+        <!-- 导入图书 -->
+        <section id="tab-import" class="tab active">
+          <h2>导入图书标注</h2>
+          <p class="tab-description">
+            支持从 Kindle、微信读书、多看、Apple Books 等导出的文本/笔记文件导入。可以先用默认规则导入，再在应用里精修成观念卡片。
+          </p>
+
+          <div class="card">
+            <div class="form-row">
+              <label for="platform-select">来源平台</label>
+              <select id="platform-select">
+                <option value="kindle">Kindle（剪贴或导出文件）</option>
+                <option value="wechat">微信读书</option>
+                <option value="duokan">多看</option>
+                <option value="apple">Apple Books</option>
+                <option value="plain">通用文本 / 其他</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label for="book-title-input">书名（可手动填写或导入后再编辑）</label>
+              <input id="book-title-input" type="text" placeholder="例如：刻意练习 / 原则 / 认知觉醒" />
+            </div>
+
+            <div class="form-row">
+              <label for="file-input">导出文件</label>
+              <input id="file-input" type="file" accept=".txt,.md,.html,.csv,.note,.pdf" />
+              <p class="hint">
+                当前版本推荐使用 <strong>.txt / .md</strong> 这类纯文本导出。如果格式复杂，也可以先复制核心内容到下方的「粘贴区」再导入。
+              </p>
+            </div>
+
+            <div class="form-row">
+              <label for="raw-text-input">或直接粘贴标注文本</label>
+              <textarea
+                id="raw-text-input"
+                rows="6"
+                placeholder="每一条摘录或观念最好单独一行，导入后可以再逐条编辑。"
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <label>
+                <input id="use-ai-filter-checkbox" type="checkbox" />
+                使用「蒹葭 · 通义千问」智能筛选，只保留观点 / 方法论 / 需要记忆的习惯
+              </label>
+              <p class="hint">
+                勾选后会先调用通义千问 AI，对整段标注做一次提炼，只留下真正值得重复复习的内容。
+              </p>
+            </div>
+
+            <div class="form-row">
+              <label>
+                <input id="create-todo-checkbox" type="checkbox" checked />
+                同时为每条观念创建对应的「待办打卡」项
+              </label>
+            </div>
+
+            <button id="import-button" class="primary-button">开始导入并生成观念卡片</button>
+            <p id="import-status" class="status-message"></p>
+          </div>
+
+          <section class="card">
+            <h3>已导入图书</h3>
+            <ul id="book-list" class="book-list"></ul>
+          </section>
+        </section>
+
+        <!-- 卡片复习 -->
+        <section id="tab-cards" class="tab">
+          <h2>今日观念卡片</h2>
+          <p class="tab-description">
+            每天花几分钟，复习你想内化的观念。读一读、想一想今天如何应用，然后做一次小小打卡或写一句感受。
+          </p>
+          <div class="list-toolbar" id="card-toolbar"></div>
+          <div id="card-list" class="card-list"></div>
+          <p id="no-cards-hint" class="hint"></p>
+        </section>
+
+        <!-- 待办 & 打卡 -->
+        <section id="tab-todos" class="tab">
+          <h2>行动待办 & 打卡</h2>
+          <p class="tab-description">
+            把观念变成可执行的小行为，像做习惯打卡一样，一天勾一次，慢慢累积改变。
+          </p>
+          <div class="list-toolbar" id="todo-toolbar"></div>
+          <div id="todo-list" class="todo-list"></div>
+          <p id="no-todos-hint" class="hint"></p>
+        </section>
+
+        <!-- 时间轴 -->
+        <section id="tab-timeline" class="tab">
+          <h2>时间轴 · 内化进度</h2>
+          <p class="tab-description">
+            通过时间轴查看最近的打卡和复盘浓度。颜色越深，说明那天你在这些观念上的投入越多。
+          </p>
+          <div id="timeline-summary" class="timeline-summary"></div>
+          <div id="timeline-list" class="timeline-list"></div>
+        </section>
+
+        <!-- 提醒设置 -->
+        <section id="tab-settings" class="tab">
+          <h2>提醒 & 推送设置</h2>
+          <p class="tab-description">
+            选择你希望的提醒方式。Web 版暂时只能在浏览器开启时提供本地提醒，后续可以升级为短信 / 邮件 / App 推送。
+          </p>
+          <div class="card">
+            <div class="form-row">
+              <label>提醒形式（可多选）</label>
+              <label>
+                <input id="mode-cards" type="checkbox" checked />
+                每日观念卡片列表
+              </label>
+              <label>
+                <input id="mode-todos" type="checkbox" checked />
+                行动待办清单
+              </label>
+              <label>
+                <input id="mode-notification" type="checkbox" />
+                浏览器通知（需授权）
+              </label>
+            </div>
+
+            <div class="form-row">
+              <label for="reminder-time">每日提醒时间</label>
+              <input id="reminder-time" type="time" value="08:30" />
+            </div>
+
+            <button id="save-settings-button" class="primary-button">保存提醒设置</button>
+            <p id="settings-status" class="status-message"></p>
+          </div>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        <span>数据保存在当前浏览器本地，不会上传到服务器。</span>
+      </footer>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+  </html>
+
